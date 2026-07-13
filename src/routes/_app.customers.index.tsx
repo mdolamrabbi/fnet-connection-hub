@@ -21,10 +21,11 @@ export const Route = createFileRoute("/_app/customers/")({
 
 type PayStatus = "paid" | "unpaid" | "partial";
 
-function computePayStatus(paid: number, due: number): PayStatus {
-  if (due <= 0) return "paid";
-  if (paid > 0) return "partial";
-  return "unpaid";
+function computePayStatus(paid: number, billed: number): PayStatus {
+  if (billed <= 0) return paid > 0 ? "paid" : "unpaid";
+  if (paid <= 0) return "unpaid";
+  if (paid >= billed) return "paid";
+  return "partial";
 }
 
 function CustomersList() {
