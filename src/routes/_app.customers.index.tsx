@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { logActivity } from "@/lib/auth";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_app/customers")({
+export const Route = createFileRoute("/_app/customers/")({
   head: () => ({ meta: [{ title: "Customers — FNET" }] }),
   component: CustomersList,
 });
