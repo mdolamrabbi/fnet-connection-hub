@@ -61,6 +61,19 @@ function NewCustomer() {
     e.preventDefault();
     setBusy(true);
     try {
+      const uname = form.username.trim();
+      if (uname) {
+        const { data: dup } = await supabase
+          .from("customers")
+          .select("id")
+          .ilike("username", uname)
+          .maybeSingle();
+        if (dup) {
+          toast.error("Username already exists.");
+          setBusy(false);
+          return;
+        }
+      }
       const { count } = await supabase
         .from("customers")
         .select("*", { count: "exact", head: true });
