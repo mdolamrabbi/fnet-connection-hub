@@ -21,10 +21,11 @@ export const Route = createFileRoute("/_app/customers/")({
 
 type PayStatus = "paid" | "unpaid" | "partial";
 
-function computePayStatus(paid: number, due: number): PayStatus {
-  if (due <= 0) return "paid";
-  if (paid > 0) return "partial";
-  return "unpaid";
+function computePayStatus(paid: number, billed: number): PayStatus {
+  if (billed <= 0) return paid > 0 ? "paid" : "unpaid";
+  if (paid <= 0) return "unpaid";
+  if (paid >= billed) return "paid";
+  return "partial";
 }
 
 function CustomersList() {
@@ -66,11 +67,14 @@ function CustomersList() {
       }
       return (cRes.data ?? []).map((c: any) => {
         const agg = invMap.get(c.id) ?? { paid: 0, due: 0, billed: 0 };
+        const monthly = Number(c.monthly_bill || 0);
+        const billed = agg.billed > 0 ? agg.billed : monthly;
+        const due = Math.max(0, billed - agg.paid);
         return {
           ...c,
           paid_amount: agg.paid,
-          due_amount: agg.due,
-          payment_status: computePayStatus(agg.paid, agg.due),
+          due_amount: due,
+          payment_status: computePayStatus(agg.paid, billed),
         };
       });
     },
