@@ -33,7 +33,7 @@ function Dashboard() {
         .slice(0, 10);
 
       const [customers, payments, invoices] = await Promise.all([
-        supabase.from("customers").select("id, status"),
+        supabase.from("customers").select("id, status, monthly_bill"),
         supabase.from("payments").select("amount, payment_date"),
         supabase.from("invoices").select("customer_id, amount, paid_amount, due_amount, status"),
       ]);
@@ -42,23 +42,31 @@ function Dashboard() {
       const ps = payments.data ?? [];
       const inv = invoices.data ?? [];
 
-      // Aggregate per-customer paid/due
-      const perCust = new Map<string, { paid: number; due: number }>();
+      // Aggregate per-customer paid/billed
+      const perCust = new Map<string, { paid: number; billed: number }>();
       for (const i of inv) {
-        const cur = perCust.get(i.customer_id) ?? { paid: 0, due: 0 };
+        const cur = perCust.get(i.customer_id) ?? { paid: 0, billed: 0 };
         cur.paid += Number(i.paid_amount || 0);
-        cur.due += Number(i.due_amount || 0);
+        cur.billed += Number(i.amount || 0);
         perCust.set(i.customer_id, cur);
       }
 
       let paidCust = 0;
       let unpaidCust = 0;
       let partialCust = 0;
+      let totalDue = 0;
       for (const c of cs) {
-        const a = perCust.get(c.id) ?? { paid: 0, due: 0 };
-        if (a.due <= 0) paidCust++;
-        else if (a.paid > 0) partialCust++;
-        else unpaidCust++;
+        const a = perCust.get(c.id) ?? { paid: 0, billed: 0 };
+        const monthly = Number(c.monthly_bill || 0);
+        const billed = a.billed > 0 ? a.billed : monthly;
+        const due = Math.max(0, billed - a.paid);
+        totalDue += due;
+        if (billed <= 0) {
+          if (a.paid > 0) paidCust++;
+          else unpaidCust++;
+        } else if (a.paid <= 0) unpaidCust++;
+        else if (a.paid >= billed) paidCust++;
+        else partialCust++;
       }
 
       const total = cs.length;
@@ -70,7 +78,6 @@ function Dashboard() {
       const monthCollection = ps
         .filter((p) => p.payment_date >= monthStart)
         .reduce((s, p) => s + Number(p.amount), 0);
-      const totalDue = inv.reduce((s, i) => s + Number(i.due_amount || 0), 0);
       const pendingBills = inv.filter((i) => i.status !== "paid").length;
       const paidBills = inv.filter((i) => i.status === "paid").length;
 
