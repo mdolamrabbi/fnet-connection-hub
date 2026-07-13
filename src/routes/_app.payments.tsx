@@ -13,7 +13,9 @@ type PaymentsSearch = { customer?: string };
 
 export const Route = createFileRoute("/_app/payments")({
   head: () => ({ meta: [{ title: "Payments — FNET" }] }),
-  validateSearch: zodValidator(searchSchema),
+  validateSearch: (search: Record<string, unknown>): PaymentsSearch => ({
+    customer: typeof search.customer === "string" ? search.customer : undefined,
+  }),
   component: PaymentsPage,
 });
 
