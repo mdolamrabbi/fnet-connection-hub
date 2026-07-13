@@ -163,6 +163,7 @@ function CustomersList() {
               <tr>
                 <th className="text-left px-4 py-3">Code</th>
                 <th className="text-left px-4 py-3">Name</th>
+                <th className="text-left px-4 py-3">Username</th>
                 <th className="text-left px-4 py-3">Phone</th>
                 <th className="text-left px-4 py-3">Zone</th>
                 <th className="text-left px-4 py-3">Package</th>
