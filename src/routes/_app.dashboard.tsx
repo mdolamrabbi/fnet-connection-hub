@@ -1,8 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StatCard, GlassCard } from "@/components/GlassCard";
-import { Users, UserCheck, UserX, Wallet, CalendarClock, FileText, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  Users,
+  UserCheck,
+  UserX,
+  Wallet,
+  CalendarClock,
+  FileText,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  CircleDollarSign,
+} from "lucide-react";
 import { fmtCurrency, fmtDate, fmtDateTime } from "@/lib/format";
 import { useEffect } from "react";
 
@@ -22,14 +33,33 @@ function Dashboard() {
         .slice(0, 10);
 
       const [customers, payments, invoices] = await Promise.all([
-        supabase.from("customers").select("id, status, monthly_bill"),
+        supabase.from("customers").select("id, status"),
         supabase.from("payments").select("amount, payment_date"),
-        supabase.from("invoices").select("status, due_amount"),
+        supabase.from("invoices").select("customer_id, amount, paid_amount, due_amount, status"),
       ]);
 
       const cs = customers.data ?? [];
       const ps = payments.data ?? [];
       const inv = invoices.data ?? [];
+
+      // Aggregate per-customer paid/due
+      const perCust = new Map<string, { paid: number; due: number }>();
+      for (const i of inv) {
+        const cur = perCust.get(i.customer_id) ?? { paid: 0, due: 0 };
+        cur.paid += Number(i.paid_amount || 0);
+        cur.due += Number(i.due_amount || 0);
+        perCust.set(i.customer_id, cur);
+      }
+
+      let paidCust = 0;
+      let unpaidCust = 0;
+      let partialCust = 0;
+      for (const c of cs) {
+        const a = perCust.get(c.id) ?? { paid: 0, due: 0 };
+        if (a.due <= 0) paidCust++;
+        else if (a.paid > 0) partialCust++;
+        else unpaidCust++;
+      }
 
       const total = cs.length;
       const active = cs.filter((c) => c.status === "active").length;
@@ -48,6 +78,9 @@ function Dashboard() {
         total,
         active,
         inactive,
+        paidCust,
+        unpaidCust,
+        partialCust,
         todaysCollection,
         monthCollection,
         totalDue,
@@ -111,9 +144,24 @@ function Dashboard() {
       </div>
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-        <StatCard label="Total Customers" value={s?.total ?? "—"} icon={<Users className="h-5 w-5" />} accent="navy" />
-        <StatCard label="Active" value={s?.active ?? "—"} icon={<UserCheck className="h-5 w-5" />} accent="success" />
-        <StatCard label="Inactive" value={s?.inactive ?? "—"} icon={<UserX className="h-5 w-5" />} accent="destructive" />
+        <Link to="/customers" search={{ status: undefined }}>
+          <StatCard label="Total Customers" value={s?.total ?? "—"} icon={<Users className="h-5 w-5" />} accent="navy" />
+        </Link>
+        <Link to="/customers" search={{ status: "paid" }}>
+          <StatCard label="Paid Customers" value={s?.paidCust ?? "—"} icon={<CheckCircle2 className="h-5 w-5" />} accent="success" />
+        </Link>
+        <Link to="/customers" search={{ status: "unpaid" }}>
+          <StatCard label="Unpaid Customers" value={s?.unpaidCust ?? "—"} icon={<AlertCircle className="h-5 w-5" />} accent="destructive" />
+        </Link>
+        <Link to="/customers" search={{ status: "partial" }}>
+          <StatCard label="Partial Customers" value={s?.partialCust ?? "—"} icon={<CircleDollarSign className="h-5 w-5" />} accent="warning" />
+        </Link>
+        <Link to="/customers" search={{ status: "active" }}>
+          <StatCard label="Active" value={s?.active ?? "—"} icon={<UserCheck className="h-5 w-5" />} accent="success" />
+        </Link>
+        <Link to="/customers" search={{ status: "inactive" }}>
+          <StatCard label="Inactive" value={s?.inactive ?? "—"} icon={<UserX className="h-5 w-5" />} accent="destructive" />
+        </Link>
         <StatCard label="Today's Collection" value={s ? fmtCurrency(s.todaysCollection) : "—"} icon={<Wallet className="h-5 w-5" />} accent="cyan" />
         <StatCard label="Monthly Collection" value={s ? fmtCurrency(s.monthCollection) : "—"} icon={<TrendingUp className="h-5 w-5" />} accent="cyan" />
         <StatCard label="Total Due" value={s ? fmtCurrency(s.totalDue) : "—"} icon={<AlertCircle className="h-5 w-5" />} accent="warning" />
