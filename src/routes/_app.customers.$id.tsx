@@ -73,6 +73,19 @@ function CustomerDetail() {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
+    const uname = (form.username ?? "").trim();
+    if (uname) {
+      const { data: dup } = await supabase
+        .from("customers")
+        .select("id")
+        .ilike("username", uname)
+        .neq("id", id)
+        .maybeSingle();
+      if (dup) {
+        toast.error("Username already exists.");
+        return;
+      }
+    }
     const { error } = await supabase
       .from("customers")
       .update({
