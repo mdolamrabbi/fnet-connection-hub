@@ -20,6 +20,7 @@ import { Route as AppPaymentsRouteImport } from './routes/_app.payments'
 import { Route as AppPackagesRouteImport } from './routes/_app.packages'
 import { Route as AppInvoicesRouteImport } from './routes/_app.invoices'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppCustomersRouteImport } from './routes/_app.customers'
 import { Route as AppActivityRouteImport } from './routes/_app.activity'
 import { Route as AppCustomersIndexRouteImport } from './routes/_app.customers.index'
 import { Route as AppCustomersNewRouteImport } from './routes/_app.customers.new'
@@ -79,31 +80,37 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCustomersRoute = AppCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppActivityRoute = AppActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCustomersIndexRoute = AppCustomersIndexRouteImport.update({
-  id: '/customers/',
-  path: '/customers/',
-  getParentRoute: () => AppRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppCustomersRoute,
 } as any)
 const AppCustomersNewRoute = AppCustomersNewRouteImport.update({
-  id: '/customers/new',
-  path: '/customers/new',
-  getParentRoute: () => AppRoute,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppCustomersRoute,
 } as any)
 const AppCustomersIdRoute = AppCustomersIdRouteImport.update({
-  id: '/customers/$id',
-  path: '/customers/$id',
-  getParentRoute: () => AppRoute,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppCustomersRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/activity': typeof AppActivityRoute
+  '/customers': typeof AppCustomersRouteWithChildren
   '/dashboard': typeof AppDashboardRoute
   '/invoices': typeof AppInvoicesRoute
   '/packages': typeof AppPackagesRoute
@@ -138,6 +145,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/activity': typeof AppActivityRoute
+  '/_app/customers': typeof AppCustomersRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/invoices': typeof AppInvoicesRoute
   '/_app/packages': typeof AppPackagesRoute
@@ -156,6 +164,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/activity'
+    | '/customers'
     | '/dashboard'
     | '/invoices'
     | '/packages'
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/activity'
+    | '/_app/customers'
     | '/_app/dashboard'
     | '/_app/invoices'
     | '/_app/packages'
@@ -287,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/customers': {
+      id: '/_app/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AppCustomersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/activity': {
       id: '/_app/activity'
       path: '/activity'
@@ -296,30 +313,47 @@ declare module '@tanstack/react-router' {
     }
     '/_app/customers/': {
       id: '/_app/customers/'
-      path: '/customers'
+      path: '/'
       fullPath: '/customers/'
       preLoaderRoute: typeof AppCustomersIndexRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppCustomersRoute
     }
     '/_app/customers/new': {
       id: '/_app/customers/new'
-      path: '/customers/new'
+      path: '/new'
       fullPath: '/customers/new'
       preLoaderRoute: typeof AppCustomersNewRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppCustomersRoute
     }
     '/_app/customers/$id': {
       id: '/_app/customers/$id'
-      path: '/customers/$id'
+      path: '/$id'
       fullPath: '/customers/$id'
       preLoaderRoute: typeof AppCustomersIdRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppCustomersRoute
     }
   }
 }
 
+interface AppCustomersRouteChildren {
+  AppCustomersIdRoute: typeof AppCustomersIdRoute
+  AppCustomersNewRoute: typeof AppCustomersNewRoute
+  AppCustomersIndexRoute: typeof AppCustomersIndexRoute
+}
+
+const AppCustomersRouteChildren: AppCustomersRouteChildren = {
+  AppCustomersIdRoute: AppCustomersIdRoute,
+  AppCustomersNewRoute: AppCustomersNewRoute,
+  AppCustomersIndexRoute: AppCustomersIndexRoute,
+}
+
+const AppCustomersRouteWithChildren = AppCustomersRoute._addFileChildren(
+  AppCustomersRouteChildren,
+)
+
 interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
+  AppCustomersRoute: typeof AppCustomersRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRoute
   AppInvoicesRoute: typeof AppInvoicesRoute
   AppPackagesRoute: typeof AppPackagesRoute
@@ -328,13 +362,11 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppStaffRoute: typeof AppStaffRoute
   AppZonesRoute: typeof AppZonesRoute
-  AppCustomersIdRoute: typeof AppCustomersIdRoute
-  AppCustomersNewRoute: typeof AppCustomersNewRoute
-  AppCustomersIndexRoute: typeof AppCustomersIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
+  AppCustomersRoute: AppCustomersRouteWithChildren,
   AppDashboardRoute: AppDashboardRoute,
   AppInvoicesRoute: AppInvoicesRoute,
   AppPackagesRoute: AppPackagesRoute,
@@ -343,9 +375,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppStaffRoute: AppStaffRoute,
   AppZonesRoute: AppZonesRoute,
-  AppCustomersIdRoute: AppCustomersIdRoute,
-  AppCustomersNewRoute: AppCustomersNewRoute,
-  AppCustomersIndexRoute: AppCustomersIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
