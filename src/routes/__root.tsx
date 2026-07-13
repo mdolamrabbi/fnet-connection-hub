@@ -79,13 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "FNET Billing System — manage ISP customers, packages, payments and invoices with a fast, realtime dashboard.",
       },
-      { property: "og:title", content: "FNET Billing System" },
+      { property: "og:title", content: "FNET Billing System — ISP Customer & Billing Management" },
       {
         property: "og:description",
-        content: "ISP customer & billing management with realtime dashboard.",
+        content: "FNET Billing System — manage ISP customers, packages, payments and invoices with a fast, realtime dashboard.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "FNET Billing System — ISP Customer & Billing Management" },
+      { name: "twitter:description", content: "FNET Billing System — manage ISP customers, packages, payments and invoices with a fast, realtime dashboard." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/pU9QSeQBKvbQUNh3AqqOND37D4f2/social-images/social-1783953108371-3e81aa8c-ce6e-439a-a3a0-559d3937a8ab.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/pU9QSeQBKvbQUNh3AqqOND37D4f2/social-images/social-1783953108371-3e81aa8c-ce6e-439a-a3a0-559d3937a8ab.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
