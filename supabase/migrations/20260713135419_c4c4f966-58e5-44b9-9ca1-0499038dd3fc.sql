@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS customers_username_unique ON public.customers (lower(username)) WHERE username IS NOT NULL AND username <> '';
