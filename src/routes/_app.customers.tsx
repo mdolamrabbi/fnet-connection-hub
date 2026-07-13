@@ -175,7 +175,7 @@ function CustomersList() {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                     No customers found
                   </td>
                 </tr>
@@ -183,10 +183,8 @@ function CustomersList() {
               {filtered.map((c: any) => (
                 <tr key={c.id} className="border-t hover:bg-muted/30">
                   <td className="px-4 py-3 font-mono text-xs">{c.customer_code}</td>
-                  <td className="px-4 py-3">
-                    <div className="font-semibold">{c.name}</div>
-                    <div className="text-xs text-muted-foreground">{c.username}</div>
-                  </td>
+                  <td className="px-4 py-3 font-semibold">{c.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{c.username ?? "—"}</td>
                   <td className="px-4 py-3">{c.phone ?? "—"}</td>
                   <td className="px-4 py-3">{c.zone?.name ?? "—"}</td>
                   <td className="px-4 py-3">
